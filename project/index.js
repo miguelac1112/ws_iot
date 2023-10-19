@@ -100,6 +100,61 @@ const conn = mysql.createConnection({
         });
     });
 
+    /*Lista de eventos de una actividad por id*/
+    app.get('/listaEventosidActividad/:idActividad', (req, res) => {
+        const idActividad = req.params.idActividad;
+
+        // Consulta SQL para obtener la lista de eventos ordenados por fecha y hora
+        const query = `
+        SELECT
+          ROW_NUMBER() OVER (ORDER BY CONCAT(ev.fecha, ' ', ev.hora) ASC) AS evento_numero,
+          ev.nombre
+        FROM actividad act
+        JOIN eventos ev ON act.idactividad = ev.idactividad
+        WHERE ev.idactividad = ?
+        ORDER BY CONCAT(ev.fecha, ' ', ev.hora) ASC;
+      `;
+
+        conn.query(query, [idActividad], (err, rows) => {
+            if (err) {
+                console.error(err);
+                res.status(500).json({ error: 'Error en la consulta' });
+            } else {
+                res.json({ eventos: rows });
+            }
+        });
+    });
+
+    /*Lista de participantes de un evento por id*/
+    app.get('/listaParticipantesidEvento/:idEvento', (req, res) => {
+        const idEvento = req.params.idEvento;
+
+        // Consulta SQL para obtener la lista de participantes numerada y ordenada por participante_codigo
+        const query = `
+            SELECT
+                ROW_NUMBER() OVER (ORDER BY participante_codigo) AS numero_participante,
+                participante_codigo,
+                usuar.nombre,
+                CASE
+                    WHEN asignacion = 1 THEN 'participante'
+                    WHEN asignacion = 2 THEN 'barra'
+                    ELSE 'desconocido'
+                    END AS asignacion
+            FROM participantes p, usuario usuar
+            WHERE p.participante_codigo = usuar.codigo
+              AND ideventos = ?
+      `;
+
+        conn.query(query, [idEvento], (err, rows) => {
+            if (err) {
+                console.error(err);
+                res.status(500).json({ error: 'Error en la consulta' });
+            } else {
+                res.json({ participantes: rows });
+            }
+        });
+    });
+
 /*Metodos Post para la creacion en los roles de Delegado General y Delegado de Actividad*/
 
     /*Creacion de actividad como Delegado General*/
