@@ -102,6 +102,8 @@ const conn = mysql.createConnection({
 
 /*Metodos Post para la creacion en los roles de Delegado General y Delegado de Actividad*/
 
+    /*Creacion de actividad como Delegado General*/
+
     app.post("/crearActividad", bodyParser.json(), function (req, res) {
         const getLastIdQuery = "SELECT MAX(idactividad) AS lastId FROM actividad";
 
@@ -132,7 +134,122 @@ const conn = mysql.createConnection({
         });
     });
 
-    app.post("/prueba", bodyParser.json(), function (req, res) {
+    /*Crear evento pero pasando el id de la actividad en el url, no se si funcione de esa forma para movil xd*/
+    app.post("/crearEvento/:idActividad", bodyParser.json(), function (req, res) {
+        // Obtén idActividad de la URL en lugar de req.body
+        let idActividad = req.params.idActividad; // Aquí estamos tomando el parámetro de la URL
+
+        const getLastIdQuery = "SELECT MAX(ideventos) AS lastId FROM eventos";
+
+        // Define un mapeo para convertir el valor del lugar
+        const lugarMap = {
+            "Bati": 1,
+            "Cancha de Minas": 2,
+            "Polideportivo PUCP": 3,
+            "Digimundo": 4,
+            "Estacionamiento de Letras": 5
+        };
+
+        conn.query(getLastIdQuery, (err, result) => {
+            if (err) {
+                throw err;
+            }
+
+            let nombre = req.body.nombre;
+            let descripcion = req.body.descripcion;
+            let fecha = req.body.fecha;
+            let hora = req.body.hora;
+            let lugar = req.body.lugar; // Esto obtiene el valor original del lugar
+
+            // Convierte el valor del lugar según el mapeo
+            const lugarId = lugarMap[lugar] || null;
+
+            // Paso 2: Incrementar el valor
+            const lastId = result[0].lastId;
+            const newId = lastId + 1;
+
+            console.log(newId);
+            console.log(nombre);
+            console.log(descripcion);
+            console.log(fecha);
+            console.log(hora);
+            console.log(idActividad);
+            console.log(lugarId); // Ahora esto es el valor convertido según el mapeo
+
+            const insertQuery = "INSERT INTO eventos (ideventos, nombre, descripcion, fecha, hora, idactividad, idlugares) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            const values = [newId, nombre, descripcion, fecha, hora, idActividad, lugarId];
+
+            conn.query(insertQuery, values, (err, result) => {
+                if (err) {
+                    res.json({ success: "failure" });
+                } else {
+                    console.log("Nuevo registro insertado con ideventos: " + newId);
+                    res.json({ success: "ok" });
+                }
+            });
+        });
+    });
+
+    /*Crear evento pero pasando el id dentro del body*/
+    app.post("/crearEvento", bodyParser.json(), function (req, res) {
+        // Obtén idActividad de la URL en lugar de req.body
+
+        const getLastIdQuery = "SELECT MAX(ideventos) AS lastId FROM eventos";
+
+        // Define un mapeo para convertir el valor del lugar
+        const lugarMap = {
+            "Bati": 1,
+            "Cancha de Minas": 2,
+            "Polideportivo PUCP": 3,
+            "Digimundo": 4,
+            "Estacionamiento de Letras": 5
+        };
+
+        conn.query(getLastIdQuery, (err, result) => {
+            if (err) {
+                throw err;
+            }
+
+            let nombre = req.body.nombre;
+            let descripcion = req.body.descripcion;
+            let fecha = req.body.fecha;
+            let hora = req.body.hora;
+            let idActividad = req.body.idActividad; // Aquí estamos tomando el parámetro de la URL
+            let lugar = req.body.lugar; // Esto obtiene el valor original del lugar
+
+            // Convierte el valor del lugar según el mapeo
+            const lugarId = lugarMap[lugar] || null;
+
+            // Paso 2: Incrementar el valor
+            const lastId = result[0].lastId;
+            const newId = lastId + 1;
+
+            console.log(newId);
+            console.log(nombre);
+            console.log(descripcion);
+            console.log(fecha);
+            console.log(hora);
+            console.log(idActividad);
+            console.log(lugarId); // Ahora esto es el valor convertido según el mapeo
+
+            const insertQuery = "INSERT INTO eventos (ideventos, nombre, descripcion, fecha, hora, idactividad, idlugares) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            const values = [newId, nombre, descripcion, fecha, hora, idActividad, lugarId];
+
+            conn.query(insertQuery, values, (err, result) => {
+                if (err) {
+                    res.json({ success: "failure" });
+                } else {
+                    console.log("Nuevo registro insertado con ideventos: " + newId);
+                    res.json({ success: "ok" });
+                }
+            });
+        });
+    });
+
+
+
+/*pruebita**/
+app.post("/prueba", bodyParser.json(), function (req, res) {
         let nombre = req.body.nombre;
         let descripcion = req.body.descripcion;
         let delegado_codigo = req.body.delegado_codigo;
