@@ -24,7 +24,7 @@ const conn = mysql.createConnection({
             "    e.hora,\n" +
             "    e.estado,\n" +
             "    act.nombre AS actividad,\n" +
-            "    (SELECT COUNT(participante_codigo) FROM participantes p WHERE p.ideventos = e.ideventos) AS cantidad_de_participantes\n" +
+            "    (SELECT COUNT(participante_codigo) FROM participantes p WHERE p.ideventos = e.ideventos) AS apoyos\n" +
             "FROM eventos e\n" +
             "JOIN actividad act ON e.idactividad = act.idactividad\n" +
             "JOIN lugares lug ON e.idlugares = lug.idlugares;\n";
