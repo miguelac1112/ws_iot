@@ -27,7 +27,7 @@ const conn = mysql.createConnection({
             "    (SELECT COUNT(participante_codigo) FROM participantes p WHERE p.ideventos = e.ideventos) AS apoyos\n" +
             "FROM eventos e\n" +
             "JOIN actividad act ON e.idactividad = act.idactividad\n" +
-            "JOIN lugares lug ON e.idlugares = lug.idlugares;\n";
+            "JOIN lugares lug ON e.idlugares = lug.idlugares where e.estado=1;\n";
 
         conn.query(sql, function (err, result, fields) {
             if (err) throw err;
@@ -45,6 +45,34 @@ const conn = mysql.createConnection({
             });
         });
 
+    });
+
+    /*Lista de eventos de una actividad por id*/
+    app.get('/listaEventosidDelegado/:idDelegado', (req, res) => {
+        const idDelegado = req.params.idDelegado;
+
+        // Consulta SQL para obtener la lista de eventos ordenados por fecha y hora
+        const query = `SELECT
+                           e.nombre AS evento,
+                           e.descripcion,
+                           e.fecha,
+                           e.hora,
+                           e.estado,
+                           act.nombre AS actividad,
+                           (SELECT COUNT(participante_codigo) FROM participantes p WHERE p.ideventos = e.ideventos) AS apoyos
+                       FROM eventos e
+                                JOIN actividad act ON e.idactividad = act.idactividad
+                                JOIN lugares lug ON e.idlugares = lug.idlugares
+                       where e.estado=1 and act.delegado_codigo=?`;
+
+        conn.query(query, [idDelegado], (err, rows) => {
+            if (err) {
+                console.error(err);
+                res.status(500).json({ error: 'Error en la consulta' });
+            } else {
+                res.json({ eventos: rows });
+            }
+        });
     });
 
 
